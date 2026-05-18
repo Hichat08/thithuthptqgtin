@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidQuizResult(data) {
+      // Basic validation of fields
+      return data.keys().hasAll(['user', 'totalScore', 'timestamp']) &&
+             data.user is map &&
+             data.user.name is string && data.user.name.size() <= 200 &&
+             data.user.className is string && data.user.className.size() <= 100 &&
+             data.totalScore is number &&
+             data.timestamp is number;
+             // Temporarily not checking request.time.toMillis() strictly to avoid client-server drift issues during testing
+    }
+
+    match /results/{resultId} {
+      // Cho phép thí sinh nộp bài công khai (không cần login)
+      // Nhưng phải tuân thủ đúng cấu trúc dữ liệu
+      allow create: if isValidQuizResult(request.resource.data);
+      
+      // Chỉ cho phép admin (bạn) liệt kê và xem kết quả
+      // Chúng ta sẽ kiểm tra email từ Google Auth
+      allow list, get: if isSignedIn() && request.auth.token.email == 'vietinvestt.vn@gmail.com';
+    }
+    
+    // Test collection for manual connectivity check
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

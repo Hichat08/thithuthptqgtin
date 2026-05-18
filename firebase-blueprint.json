@@ -1,0 +1,33 @@
+{
+  "entities": {
+    "QuizResult": {
+      "title": "Quiz Result",
+      "description": "Record of a user's quiz attempt",
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "className": { "type": "string" }
+          }
+        },
+        "totalScore": { "type": "number" },
+        "part1Score": { "type": "number" },
+        "part2Score": { "type": "number" },
+        "part1CorrectCount": { "type": "number" },
+        "part2FullyCorrectCount": { "type": "number" },
+        "timeSpentSeconds": { "type": "number" },
+        "cheatCount": { "type": "number" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["user", "totalScore", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/results/{resultId}": {
+      "schema": "QuizResult",
+      "description": "Collection of all quiz attempts"
+    }
+  }
+}
