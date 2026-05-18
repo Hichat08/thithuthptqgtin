@@ -77,9 +77,9 @@ export default function App() {
     return saved ? Number(saved) : EXAM_SETS[0]?.id || 1;
   });
 
-  const QUESTIONS =
-    EXAM_SETS.find((e) => e.id === selectedExamId)?.questions ||
-    EXAM_SETS[0].questions;
+  const selectedExam =
+    EXAM_SETS.find((e) => e.id === selectedExamId) || EXAM_SETS[0];
+  const QUESTIONS = selectedExam.questions;
 
   const [answers, setAnswers] = useState<Record<number, any>>(() => {
     const saved = localStorage.getItem("quiz_answers");
@@ -100,6 +100,7 @@ export default function App() {
     return Number(localStorage.getItem("quiz_time_spent") || 0);
   });
 
+  const MAX_TIME_SECONDS = 50 * 60;
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
 
@@ -176,6 +177,13 @@ export default function App() {
     }
     return () => clearInterval(interval);
   }, [quizStatus]);
+
+  useEffect(() => {
+    if (quizStatus !== "RUNNING") return;
+    if (timeSpent >= MAX_TIME_SECONDS) {
+      submitQuiz();
+    }
+  }, [timeSpent, quizStatus, submitQuiz]);
 
   const startQuiz = async (info: any) => {
     // Admin check logic
@@ -306,7 +314,7 @@ export default function App() {
     };
   };
 
-  const submitQuiz = async () => {
+  async function submitQuiz() {
     const results = calculateResults();
     if (user) {
       const record = {
@@ -329,7 +337,7 @@ export default function App() {
     }
     setQuizStatus("FINISHED");
     setShowConfirmSubmit(false);
-  };
+  }
 
   if (quizStatus === "LOGIN" || (!user && quizStatus !== "ADMIN")) {
     return (
@@ -352,6 +360,8 @@ export default function App() {
         user={user}
         results={results}
         answers={answers}
+        questions={QUESTIONS}
+        examTitle={selectedExam.title}
         onReview={() => setQuizStatus("RUNNING")}
         onReset={() => {
           localStorage.clear();
@@ -360,6 +370,8 @@ export default function App() {
       />
     );
   }
+
+  const timeRemaining = Math.max(0, MAX_TIME_SECONDS - timeSpent);
 
   return (
     <div className="h-[100dvh] w-full flex bg-[#0A0014] text-white font-sans overflow-hidden select-none">
@@ -381,7 +393,7 @@ export default function App() {
       <main className="flex-1 flex flex-col relative overflow-hidden">
         <QuizHeader
           user={user}
-          timeSpent={timeSpent}
+          timeRemaining={timeRemaining}
           onFinishRequest={() => setShowConfirmSubmit(true)}
         />
 
