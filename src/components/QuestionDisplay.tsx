@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import React from "react";
 import { Question, QuestionType } from "../types";
 import GlassContainer from "./GlassContainer";
 import {
@@ -46,11 +47,11 @@ export default function QuestionDisplay({
   };
 
   const isCodeBlock =
-    question.content.includes("Python:") || question.content.includes("C++:");
+    question.content.includes("Python") || question.content.includes("C++");
 
   function renderTextWithCode(text?: string) {
     if (!text) return null;
-    const parts: Array<string | JSX.Element> = [];
+    const parts: Array<string | React.ReactNode> = [];
     const re = /`([^`]+)`/g;
     let lastIndex = 0;
     let m: RegExpExecArray | null;
@@ -131,11 +132,11 @@ export default function QuestionDisplay({
           {/* Question Content */}
           <div className="absolute -left-10 top-2 w-[2px] h-full bg-gradient-to-b from-neon-pink via-neon-pink/20 to-transparent hidden lg:block" />
           {isCodeBlock ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 md:p-6 text-sm md:text-base font-mono leading-relaxed text-white/90 whitespace-pre-wrap">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 md:p-6 text-sm md:text-base font-mono leading-relaxed text-white/90 whitespace-pre-wrap break-words">
               {renderTextWithCode(question.content)}
             </div>
           ) : (
-            <h3 className="text-lg md:text-2xl font-bold leading-relaxed text-white/90 whitespace-pre-wrap tracking-tight">
+            <h3 className="text-lg md:text-2xl font-bold leading-relaxed text-white/90 whitespace-pre-wrap tracking-tight break-words">
               {renderTextWithCode(question.content)}
             </h3>
           )}
@@ -182,7 +183,7 @@ export default function QuestionDisplay({
                     {opt.id}
                   </div>
                   <span
-                    className={`text-sm md:text-lg transition-all ${isSelected ? "font-bold text-white" : "font-medium text-white/70"}`}
+                    className={`text-sm md:text-lg transition-all break-words ${isSelected ? "font-bold text-white" : "font-medium text-white/70"}`}
                   >
                     {renderTextWithCode(opt.text)}
                   </span>
