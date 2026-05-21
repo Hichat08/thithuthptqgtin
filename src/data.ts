@@ -20,6 +20,7 @@ import { EXAM_SET_19 } from "./data18";
 import { EXAM_SET_20 } from "./data19";
 import { EXAM_SET_21 } from "./data20";
 import { EXAM_SET_22 } from "./data21";
+import { EXAM_SET_23 } from "./data22";
 
 function shuffleArray<T>(array: T[]): T[] {
   const newArray = [...array];
@@ -694,4 +695,5 @@ export const EXAM_SETS = [
   EXAM_SET_20,
   EXAM_SET_21,
   EXAM_SET_22,
+  EXAM_SET_23,
 ];

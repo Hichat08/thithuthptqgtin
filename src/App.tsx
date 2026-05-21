@@ -21,6 +21,7 @@ import { EXAM_SETS } from "./data";
 import { db, OperationType, handleFirestoreError } from "./lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import LoginScreen from "./components/LoginScreen";
+import { fetchSavedUser, saveUser } from "./api/user";
 import QuizHeader from "./components/QuizHeader";
 import QuestionDisplay from "./components/QuestionDisplay";
 import QuestionNavigator from "./components/QuestionNavigator";
@@ -47,6 +48,33 @@ export default function App() {
     const saved = localStorage.getItem("quiz_history");
     return saved ? JSON.parse(saved) : [];
   });
+  const [isRestoringUser, setIsRestoringUser] = useState(true);
+
+  // Restore saved user from backend if localStorage is empty
+  useEffect(() => {
+    if (user) {
+      setIsRestoringUser(false);
+      return;
+    }
+
+    let isCancelled = false;
+    fetchSavedUser()
+      .then((savedUser) => {
+        if (isCancelled) return;
+        if (savedUser) {
+          setUser(savedUser);
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsRestoringUser(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   // Listen for auth changes to handle admin sessions
   useEffect(() => {
@@ -227,9 +255,15 @@ export default function App() {
       return;
     }
 
+    const userInfo = {
+      name: info.name.trim(),
+      className: info.className.trim(),
+    };
+
     if (info.examId) setSelectedExamId(info.examId);
 
-    setUser(info);
+    const saved = await saveUser(userInfo);
+    setUser(saved || userInfo);
     setQuizStatus("RUNNING");
     setStartTime(Date.now());
     setTimeSpent(0);
@@ -339,10 +373,19 @@ export default function App() {
     setShowConfirmSubmit(false);
   }
 
+  if (isRestoringUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0014] text-white">
+        Đang khôi phục thông tin người dùng...
+      </div>
+    );
+  }
+
   if (quizStatus === "LOGIN" || (!user && quizStatus !== "ADMIN")) {
     return (
       <LoginScreen
         onStart={startQuiz}
+        savedUser={user ?? undefined}
         isAdminAuthenticating={isAdminAuthenticating}
         onAdminCancel={() => setIsAdminAuthenticating(false)}
       />

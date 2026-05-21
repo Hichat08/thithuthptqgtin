@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   XCircle,
@@ -18,7 +18,8 @@ import Logo from "./Logo";
 import { EXAM_SETS } from "../data";
 
 interface Props {
-  onStart: (info: UserInfo) => void;
+  onStart: (info: any) => void;
+  savedUser?: UserInfo;
   isAdminAuthenticating?: boolean;
   onAdminCancel?: () => void;
 }
@@ -27,6 +28,7 @@ export default function LoginScreen({
   onStart,
   isAdminAuthenticating,
   onAdminCancel,
+  savedUser,
 }: Props) {
   const [name, setName] = useState("");
   const [className, setClassName] = useState("");
@@ -36,6 +38,13 @@ export default function LoginScreen({
   const [password, setPassword] = useState("");
   const [step, setStep] = useState<"form" | "select">("form");
   const [tempUser, setTempUser] = useState<UserInfo | null>(null);
+
+  useEffect(() => {
+    if (savedUser) {
+      setTempUser(savedUser);
+      setStep("select");
+    }
+  }, [savedUser]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
